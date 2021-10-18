@@ -1,0 +1,21 @@
+{
+  "name": "erc721_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.5.1",
+    "express": "^4.17.1",
+    "serve-static": "^1.14.1",
+    "servestatic": "0.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Benedict Wetzel",
+  "license": "ISC"
+}

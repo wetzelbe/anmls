@@ -102,3 +102,15 @@ dist
 
 # TernJS port file
 .tern-port
+
+*build
+
+*bin
+
+*migrations
+
+*.secret
+
+*test
+
+*truffle-config.js
