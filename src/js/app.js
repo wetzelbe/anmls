@@ -298,7 +298,7 @@ App = {
             template.find('.animal-parent1').text("0x" + parent1.toString(16).toUpperCase());
             template.find('.animal-parent2').text("0x" + parent2.toString(16).toUpperCase());
             template.find('.animal-owner').text(App.shorten(owner));
-            template.find('.animal-price').text(web3.fromWei(price) + " ETH");
+            template.find('.animal-price').text(web3.utils.fromWei(price) + " ETH");
             template.find('.tokenID').text("0x" + tokenId.toString(16).toUpperCase());
             template.find('.img-center').attr('src', App.imagepath + "0x" + genes.toString(16).toUpperCase());
             template.find('.animal-buy').attr('onclick', "App.Pages.Marketplace.buy(" + tokenId + "," + price + ")");
@@ -395,7 +395,7 @@ App = {
           baseInstance = instance;
           let token = modal.find('.tokenId');
           let price = modal.find('.price');
-          return baseInstance.sell.sendTransaction(token[0].innerHTML, web3.toWei(price[0].innerHTML), { from: App.account });
+          return baseInstance.sell.sendTransaction(token[0].innerHTML, web3.utils.toWei(price[0].innerHTML), { from: App.account });
         }).catch(function (err) {
           console.log(err.message);
         });
