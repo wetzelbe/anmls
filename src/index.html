@@ -42,11 +42,59 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="confirmpurchasemodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm Purchase</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <strong>TokenID </strong><span class="tokenId"></span><br />
+                <strong>Price </strong><span class="price"></span>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark btn-confirm-purchase">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmsellmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm Sell</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <strong>TokenID </strong><span class="tokenId"></span><br />
+                <strong>Price </strong><span class="price"></span>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark btn-confirm-sell">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <body>
     <nav class="navbar navbar-light bg-white mb-3 border justify-content-between">
         <a role="button" style="cursor: pointer;" class="navbar-brand">ANMLS</a>
         <form class="form-inline">
+            <button class="btn btn-outline-dark btn-marketplace mr-3" type="button">Marketplace</button>
+            <button class="btn btn-outline-dark btn-sell d-none mr-3" type="button">Sell</button>
             <button class="btn btn-outline-dark btn-breed d-none mr-3" type="button">Breed</button>
             <button class="btn btn-dark btn-connect-wallet" type="button">Connect Wallet</button>
         </form>
@@ -82,8 +130,8 @@
     <div id="animalTemplate" style="display: none;">
         <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
             <div class="card card-default card-pet">
-                <img data-src="holder.js/140x140" class="img-rounded img-center" style="width: 100%;"
-                    src="https://animalso.com/wp-content/uploads/2017/01/Golden-Retriever_6.jpg"
+                <img class="img-rounded img-center" style="width: 100%;"
+                    src="#"
                     data-holder-rendered="true">
                 <div class="m-3">
                     <h3 class="card-title">Scrappy</h3>
@@ -168,9 +216,53 @@
 
     </div>
 
+    <div class="container container-sell d-none">
+        <h1 class="align-center display-4 text-center m-5">Sell</h1>
+        <div class="card card-default form-group m-3 p-3">
+            <label for="animal-select">Select which ANML you want to sell:</label>
+            <select id="animal-select" class="form-control mb-3">
 
+            </select>
+            <div class="d-none container-sell-error border rounded container border-danger mb-3 p-3 bg-light mt-3" id="error">
+                <a class="text-danger">
+                    You don't have any Animals to sell!
+                </a>
+            </div>
+            <label for="price-input">Price in ETH:</label>
+            <input id="price-input" class="form-control mb-3">
+            <button class="btn btn-dark btn-sell-animal">Sell</button>
+        </div>
+    </div>
 
+    <div class="container container-marketplace d-none">
+        <h1 class="align-center display-4 text-center m-5">Marketplace</h1>
+        <p class="text-center m-3">
+            Here you can see ANMLS that are for sale and buy them!
+        </p>
+        <h3 class="d-none m-5 text-center" id="no-animal-for-sale-message">Currently there are no ANMLS for sale on the Marketplace!</h3>
+        <div class="row" id="buyable-animals">
 
+        </div>
+        <div id="marketplaceTemplate" style="display: none;">
+            <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card card-default card-pet">
+                    <img class="img-rounded img-center" style="width: 100%;"
+                        src="#"
+                        data-holder-rendered="true">
+                    <div class="m-3">
+                        <h3 class="card-title">Scrappy</h3>
+                        <span class="tokenID">0x0</span><br />
+                        <strong>Genes</strong> <span class="animal-genes">Golden Retriever</span><br />
+                        <strong>Parent 1</strong> <span class="animal-parent1">1</span><br />
+                        <strong>Parent 2</strong> <span class="animal-parent2">2</span><br />
+                        <strong>Owner</strong> <span class="animal-owner">2</span><br />
+                        <h4 class="m-3 text-right"><span class="badge badge-dark animal-price"></span>
+                            <button class="btn btn-dark animal-buy d-none">Buy</button></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>

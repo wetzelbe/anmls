@@ -19,12 +19,22 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     mapping(address => mapping(uint256 => uint256)) private _enumOwnerIndex;
     mapping(bytes4 => bool) private _supportedInterfaces;
 
+    mapping(uint256 => bool) private _buyable;
+    uint256[] _forSale;
+    mapping(uint256 => uint256) private _price;
+    mapping(uint256 => uint256) private _indexOfBuyable;
+
     /// @notice Constructor creates Parents with specified Genes
     /// @param GenesParent1 Specify Genes of first Parent
     /// @param GenesParent2 Specify Genes of second Parent
-    constructor(uint256 GenesParent1, uint256 GenesParent2) {
-        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender);
-        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender);
+    constructor(
+        uint256 GenesParent1,
+        string memory uri1,
+        uint256 GenesParent2,
+        string memory uri2
+    ) {
+        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender, uri1);
+        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender, uri2);
         _supportedInterfaces[0x80ac58cd] = true;
         _supportedInterfaces[0x01ffc9a7] = true;
         _supportedInterfaces[0x5b5e139f] = true;
@@ -36,7 +46,8 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         uint256 Parent1,
         uint256 Parent2,
         string memory Name,
-        address firstOwner
+        address firstOwner,
+        string memory uri
     ) private {
         _tokenIds++;
         _parent1[_tokenIds] = Parent1;
@@ -44,21 +55,36 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         _genes[_tokenIds] = Genes;
         _name[_tokenIds] = Name;
         _owner[_tokenIds] = firstOwner;
+        _uri[_tokenIds] = uri;
         _enumOwner[firstOwner].push(_tokenIds);
-        _enumOwnerIndex[firstOwner][_tokenIds] = _enumOwner[firstOwner].length - 1;
+        _enumOwnerIndex[firstOwner][_tokenIds] =
+            _enumOwner[firstOwner].length -
+            1;
     }
 
     function _transfer(
-      address _from,
-      address _to,
-      uint256 _tokenId
+        address _from,
+        address _to,
+        uint256 _tokenId
     ) private {
-        require(_to != address(0) && _from != address(0), "Cannot transfer to Zero Address!");
+        require(
+            _to != address(0) && _from != address(0),
+            "Cannot transfer to Zero Address!"
+        );
         _owner[_tokenId] = _to;
         _approvedAddress[_tokenId] = address(0);
         _enumOwner[_to].push(_tokenId);
         _enumOwnerIndex[_to][_tokenId] = _enumOwner[_to].length - 1;
-        delete _enumOwner[_from][_enumOwnerIndex[_from][_tokenId]];
+
+        _enumOwner[_from][_enumOwnerIndex[_from][_tokenId]] = _enumOwner[_from][
+            _enumOwner[_from].length - 1
+        ];
+
+        _enumOwnerIndex[_from][
+            _enumOwner[_from][_enumOwner[_from].length - 1]
+        ] = _enumOwnerIndex[_from][_tokenId];
+
+        _enumOwner[_from].pop();
     }
 
     // ----------------------- Begin Breading Functionality ------------------------------
@@ -84,25 +110,18 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             "Not the owner, nor the operator of the owner of second Parent!"
         );
 
-        uint256 seed = uint256(
-            keccak256(abi.encodePacked(block.number))
-        );
-        uint256 childGene = (((_genes[Parent1] ^ _genes[Parent2]) ^ 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) & _genes[Parent1]) |
-                            ((_genes[Parent1] ^ _genes[Parent2]) & seed);
+        uint256 seed = uint256(keccak256(abi.encodePacked(block.number)));
+        uint256 childGene = (((_genes[Parent1] ^ _genes[Parent2]) ^
+            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) &
+            _genes[Parent1]) | ((_genes[Parent1] ^ _genes[Parent2]) & seed);
 
-        _addAnimal(
-            childGene,
-            Parent1,
-            Parent2,
-            childName,
-            msg.sender
-        );
+        string memory base = "https://anmls-test.technology/api/v1/metadata/";
+        _addAnimal(childGene, Parent1, Parent2, childName, msg.sender, string(abi.encodePacked(base, childGene)));
         return _tokenIds;
     }
 
     function _isValidToken(uint256 _tokenId) private view returns (bool) {
-        if (_tokenId > 0 && _tokenId <= _tokenIds )
-            return true;
+        if (_tokenId > 0 && _tokenId <= _tokenIds) return true;
         return false;
     }
 
@@ -132,8 +151,6 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         return _tokenIds;
     }
 
-
-
     // ----------------------- Begin ERC721 Functions -------------------------------------
 
     /// @notice Count all NFTs assigned to an owner
@@ -141,7 +158,12 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     ///  function throws for queries about the zero address.
     /// @param _checkowner An address for whom to query the balance
     /// @return The number of NFTs owned by `_owner`, possibly zero
-    function balanceOf(address _checkowner) external override view returns (uint256) {
+    function balanceOf(address _checkowner)
+        external
+        view
+        override
+        returns (uint256)
+    {
         return _enumOwner[_checkowner].length;
     }
 
@@ -150,7 +172,12 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     ///  about them do throw.
     /// @param _tokenId The identifier for an NFT
     /// @return The address of the owner of the NFT
-    function ownerOf(uint256 _tokenId) external override view returns (address) {
+    function ownerOf(uint256 _tokenId)
+        external
+        view
+        override
+        returns (address)
+    {
         return _owner[_tokenId];
     }
 
@@ -179,7 +206,10 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             "Sender not authorized!"
         );
         require(_from == _owner[_tokenId], "Not the Owner!");
-        require(_to == address(0) && _from == address(0), "Cannot transfer to Zero Address!");
+        require(
+            _to == address(0) && _from == address(0),
+            "Cannot transfer to Zero Address!"
+        );
         require(_tokenId <= _tokenIds && _tokenId > 0, "Not a valid NFT");
 
         _transfer(_from, _to, _tokenId);
@@ -221,7 +251,10 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             "Sender not authorized!"
         );
         require(_from == _owner[_tokenId], "Not the Owner!");
-        require(_to != address(0) && _from != address(0), "Cannot transfer to Zero Address!");
+        require(
+            _to != address(0) && _from != address(0),
+            "Cannot transfer to Zero Address!"
+        );
         require(_tokenId <= _tokenIds && _tokenId > 0, "Not a valid NFT");
 
         _transfer(_from, _to, _tokenId);
@@ -265,7 +298,10 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
                 _approvedAddress[_tokenId] == msg.sender,
             "You are not the owner!"
         );
-        require(_to != address(0) && _from != address(0), "Cannot send to zero address");
+        require(
+            _to != address(0) && _from != address(0),
+            "Cannot send to zero address"
+        );
         require(_tokenId <= _tokenIds && _tokenId > 0, "Not a valid NFT");
 
         _transfer(_from, _to, _tokenId);
@@ -294,7 +330,10 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     ///  multiple operators per owner.
     /// @param _newoperator Address to add to the set of authorized operators
     /// @param _approved True if the operator is approved, false to revoke approval
-    function setApprovalForAll(address _newoperator, bool _approved) external override {
+    function setApprovalForAll(address _newoperator, bool _approved)
+        external
+        override
+    {
         _operator[msg.sender][_newoperator] = _approved;
         emit ApprovalForAll(msg.sender, _newoperator, _approved);
     }
@@ -303,7 +342,12 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @dev Throws if `_tokenId` is not a valid NFT.
     /// @param _tokenId The NFT to find the approved address for
     /// @return The approved address for this NFT, or the zero address if there is none
-    function getApproved(uint256 _tokenId) external override view returns (address) {
+    function getApproved(uint256 _tokenId)
+        external
+        view
+        override
+        returns (address)
+    {
         require(_isValidToken(_tokenId), "Not a valid NFT!");
         return _approvedAddress[_tokenId];
     }
@@ -313,8 +357,9 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @param _checkoperator The address that acts on behalf of the owner
     /// @return True if `_operator` is an approved operator for `_owner`, false otherwise
     function isApprovedForAll(address _checkowner, address _checkoperator)
-        external override
+        external
         view
+        override
         returns (bool)
     {
         return _operator[_checkowner][_checkoperator];
@@ -325,12 +370,17 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     // ----------------------- Begin ERC721Metadata Functions -------------------------------------
 
     /// @notice A descriptive name for a collection of NFTs in this contract
-    function name() external override pure returns (string memory _retname) {
+    function name() external pure override returns (string memory _retname) {
         return "Animals";
     }
 
     /// @notice An abbreviated name for NFTs in this contract
-    function symbol() external override pure returns (string memory _retsymbol) {
+    function symbol()
+        external
+        pure
+        override
+        returns (string memory _retsymbol)
+    {
         return "ANMLS";
     }
 
@@ -338,9 +388,25 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
     ///  3986. The URI may point to a JSON file that conforms to the "ERC721
     ///  Metadata JSON Schema".
-    function tokenURI(uint256 _tokenId) external override view returns (string memory) {
+    function tokenURI(uint256 _tokenId)
+        external
+        view
+        override
+        returns (string memory)
+    {
         require(_isValidToken(_tokenId), "Not a valid NFT");
         return _uri[_tokenId];
+    }
+
+    // Additional: Set URI
+    function setTokenUri(uint256 _tokenId, string memory newuri) external {
+        require(_isValidToken(_tokenId), "Not a valid NFT");
+        require(
+            _owner[_tokenId] == msg.sender ||
+                _operator[_owner[_tokenId]][msg.sender],
+            "Neither the owner, nor a approved Operator"
+        );
+        _uri[_tokenId] = newuri;
     }
 
     // ----------------------- End ERC721Metadata Functions -------------------------------------
@@ -354,8 +420,9 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @return `true` if the contract implements `interfaceID` and
     ///  `interfaceID` is not 0xffffffff, `false` otherwise
     function supportsInterface(bytes4 interfaceID)
-        external override
+        external
         view
+        override
         returns (bool)
     {
         return _supportedInterfaces[interfaceID];
@@ -367,7 +434,7 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @notice Count NFTs tracked by this contract
     /// @return A count of valid NFTs tracked by this contract, where each one of
     ///  them has an assigned and queryable owner not equal to the zero address
-    function totalSupply() external override view returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return _tokenIds;
     }
 
@@ -376,7 +443,12 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @param _index A counter less than `totalSupply()`
     /// @return The token identifier for the `_index`th NFT,
     ///  (sort order not specified)
-    function tokenByIndex(uint256 _index) external override view returns (uint256) {
+    function tokenByIndex(uint256 _index)
+        external
+        view
+        override
+        returns (uint256)
+    {
         require(_index < _tokenIds, "Index is too high");
         return _index + 1;
     }
@@ -388,13 +460,81 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @param _index A counter less than `balanceOf(_owner)`
     /// @return The token identifier for the `_index`th NFT assigned to `_owner`,
     ///   (sort order not specified)
-    function tokenOfOwnerByIndex(address _checkowner, uint256 _index) external override view returns (uint256) {
-        require(_enumOwner[_checkowner].length > _index, "Address does not own that many Tokens");
+    function tokenOfOwnerByIndex(address _checkowner, uint256 _index)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        require(
+            _enumOwner[_checkowner].length > _index,
+            "Address does not own that many Tokens"
+        );
         require(_checkowner != address(0), "Given Address is zero");
         return _enumOwner[_checkowner][_index];
     }
 
-
-    
     // ----------------------- End ERC721Enumerable Functions ---------------------------
+
+    // ----------------------- Begin Marketplace Functions ------------------------------
+
+    function sell(uint256 _tokenId, uint256 price) external {
+        require(_isValidToken(_tokenId));
+        address owner = _owner[_tokenId];
+
+        require(owner == msg.sender || _operator[owner][msg.sender]);
+        if (_buyable[_tokenId]) {
+            _price[_tokenId] = price;
+        } else {
+            _buyable[_tokenId] = true;
+
+            _forSale.push(_tokenId);
+            _price[_tokenId] = price;
+            _indexOfBuyable[_tokenId] = _forSale.length - 1;
+        }
+    }
+
+    function buy(uint256 _tokenId) external payable {
+        address payable buyer = payable(msg.sender);
+        uint256 payedPrice = msg.value;
+
+        require(_owner[_tokenId] != buyer, "Buyer can not be the seller");
+        require(_isValidToken(_tokenId), "Not a valid NFT");
+        require(_buyable[_tokenId], "NFT is not on Sale");
+        require(payedPrice >= _price[_tokenId], "Price is too low");
+
+        // pay the seller
+        // remove token from tokensForSale
+        bool sent = buyer.send(msg.value);
+        require(sent, "Failed to send Ether");
+        _transfer(_owner[_tokenId], buyer, _tokenId);
+
+        _indexOfBuyable[_forSale.length - 1] = _indexOfBuyable[_tokenId];
+        _forSale[_indexOfBuyable[_tokenId]] = _forSale[_forSale.length - 1];
+
+        _buyable[_tokenId] = false;
+        _forSale.pop();
+    }
+
+    function buyableByIndex(uint256 index) external view returns (uint256) {
+        require(index < _forSale.length);
+        return _forSale[index];
+    }
+
+    function buyableNumber() external view returns (uint256) {
+        return _forSale.length;
+    }
+
+    function priceOf(uint256 _tokenId) external view returns (uint256) {
+        require(_isValidToken(_tokenId));
+        require(_buyable[_tokenId]);
+        return _price[_tokenId];
+    }
+
+    function isBuyable(uint256 _tokenId) external view returns (bool) {
+        require(_isValidToken(_tokenId));
+        return _buyable[_tokenId];
+    }
+
+    // ----------------------- End Marketplace Functions   ------------------------------
 }

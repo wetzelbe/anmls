@@ -2,17 +2,25 @@ App = {
   web3Provider: null,
   contracts: {},
   account: null,
-  imagepath: "/api/v1/image/",
+  imagepath: "https://localhost:44312/api/v1/image/",
   tokensofUser: [],
+  buyableTokens: [],
   Pages: {
+    current: "Home",
     hideAll: function () {
       $('.container-youngest').addClass("d-none");
       $('.container-user').addClass("d-none");
       $('.container-breed').addClass("d-none");
       $('.container-breed-error').addClass("d-none");
+      $('.container-marketplace').addClass("d-none");
+      $('.container-sell').addClass('d-none');
+    },
+    reload: function () {
+      App.Pages[App.Pages.current].init()
     },
     Home: {
       init: function () {
+        App.Pages.current = "Home";
         App.Pages.hideAll();
         $('.container-youngest').removeClass("d-none");
         var latestAnimals = $('#latestAnimals');
@@ -68,6 +76,7 @@ App = {
     },
     Breed: {
       init: function () {
+        App.Pages.current = "Breed";
         App.Pages.Breed.breed();
       },
       show: function () {
@@ -86,10 +95,13 @@ App = {
             $('.container-breed-error').removeClass("d-none");
             throw "Not enough animals to breed!";
           }
-          App.getTokenIds(baseInstance, App.account, 0, x - 1, baseInstance.tokenOfOwnerByIndex.call(App.account, 0), App.Pages.Breed.addTokensOfOwnerToSelect)
-          App.Pages.hideAll();
-          $('.container-breed').removeClass("d-none");
-          $('#child').find('.animal-owner').text(App.shorten(App.account))
+          else {
+            $('.container-breed-error').addClass("d-none");
+            App.getTokenIds(baseInstance, App.account, 0, x - 1, baseInstance.tokenOfOwnerByIndex.call(App.account, 0), App.Pages.Breed.addTokensOfOwnerToSelect)
+            App.Pages.hideAll();
+            $('.container-breed').removeClass("d-none");
+            $('#child').find('.animal-owner').text(App.shorten(App.account))
+          }
         }).catch(function (err) {
           console.log(err.message);
         });
@@ -154,13 +166,14 @@ App = {
     },
     User: {
       init: function () {
+        App.Pages.current = "User";
         App.Pages.hideAll();
         $('.container-user').removeClass("d-none");
         App.Pages.User.load();
       },
       show: function () {
         App.Pages.hideAll();
-        $('.container-youngest').removeClass("d-none");
+        $('.container-user').removeClass("d-none");
       },
 
       load: function () {
@@ -173,7 +186,6 @@ App = {
         }).then(function (x) {
           console.log("User has " + x + " Tokens");
           if (x < 1) {
-            App.Pages.hideAll();
             $('#no-animal-message').removeClass("d-none");
           }
           else {
@@ -213,6 +225,7 @@ App = {
             template.find('.card-title').text(name);
             template.find('.animal-parent1').text("0x" + parent1.toString(16).toUpperCase());
             template.find('.animal-parent2').text("0x" + parent2.toString(16).toUpperCase());
+            template.find('.animal-owner').text(App.shorten(App.account));
             template.find('.img-center').attr('src', App.imagepath + "0x" + genes.toString(16).toUpperCase());
 
 
@@ -227,6 +240,165 @@ App = {
         }
 
 
+      }
+    },
+    Marketplace: {
+      init: function () {
+        App.Pages.current = "Marketplace";
+        App.Pages.hideAll();
+        $('.container-marketplace').removeClass("d-none")
+        App.Pages.Marketplace.load();
+      },
+      load: function () {
+        let buyableAnimals = $('#buyable-animals');
+        buyableAnimals.empty();
+        App.getBuyableTokenIds(undefined, undefined, undefined, App.Pages.Marketplace.showAnimals);
+      },
+      showAnimals: function (baseInstance, n, max) {
+
+        if (App.buyableTokens.length == 0) {
+          $('#no-animal-for-sale-message').removeClass("d-none")
+          return;
+        }
+        $('#no-animal-for-sale-message').addClass("d-none")
+        if (baseInstance == undefined) {
+          App.contracts.Base.deployed().then((instance) => {
+            App.Pages.Marketplace.showAnimals(instance, 0, App.buyableTokens.length - 1);
+          })
+        }
+        else {
+          let name;
+          let genes;
+          let parent1;
+          let parent2;
+          let tokenId = App.buyableTokens[n].toString();
+          let owner;
+          let price;
+          baseInstance.nameOf.call(tokenId).then(function (x) {
+            name = x;
+            return baseInstance.genesOf.call(tokenId);
+          }).then(function (x) {
+            genes = x;
+            return baseInstance.parent1Of.call(tokenId);
+          }).then(function (x) {
+            parent1 = x;
+            return baseInstance.parent2Of.call(tokenId);
+          }).then(function (x) {
+            parent2 = x;
+            return baseInstance.ownerOf.call(tokenId);
+          }).then(function (x) {
+            owner = x;
+            return baseInstance.priceOf.call(tokenId);
+          }).then(function (x) {
+            price = x;
+            let buyableAnimals = $('#buyable-animals');
+            let template = $('#marketplaceTemplate');
+            template.find('.animal-genes').text("0x" + genes.toString(16).toUpperCase());
+            template.find('.card-title').text(name);
+            template.find('.animal-parent1').text("0x" + parent1.toString(16).toUpperCase());
+            template.find('.animal-parent2').text("0x" + parent2.toString(16).toUpperCase());
+            template.find('.animal-owner').text(App.shorten(owner));
+            template.find('.animal-price').text(web3.fromWei(price) + " ETH");
+            template.find('.tokenID').text("0x" + tokenId.toString(16).toUpperCase());
+            template.find('.img-center').attr('src', App.imagepath + "0x" + genes.toString(16).toUpperCase());
+            template.find('.animal-buy').attr('onclick', "App.Pages.Marketplace.buy(" + tokenId + "," + price + ")");
+            if (App.account !== null)
+              template.find('.animal-buy').removeClass("d-none");
+
+            buyableAnimals.append(template.html());
+
+            if (n < max) {
+              App.Pages.Marketplace.showAnimals(baseInstance, n + 1, max);
+            }
+          }).catch(function (err) {
+            console.log(err.message);
+          });
+        }
+
+
+      },
+      buy: function (tokenId, price) {
+        console.log("Buying " + tokenId);
+        $('#confirmpurchasemodal').find('.price').text(price)
+        $('#confirmpurchasemodal').find('.tokenId').text(tokenId)
+        $('#confirmpurchasemodal').modal('show')
+      },
+      confirm: function () {
+        let baseInstance;
+        App.contracts.Base.deployed().then(function (instance) {
+          baseInstance = instance;
+          return baseInstance.buy.sendTransaction($('#confirmpurchasemodal').find('.tokenId').text(),
+            {
+              from: App.account,
+              value: $('#confirmpurchasemodal').find('.price').text()
+            });
+        }).catch(function (err) {
+          console.log(err.message);
+        });
+
+        App.Pages.Home.init();
+        $('#confirmpurchasemodal').modal('hide');
+      }
+
+
+    },
+    Sell: {
+      init: function () {
+        let baseInstance;
+        App.contracts.Base.deployed().then(function (instance) {
+          baseInstance = instance;
+
+          return baseInstance.balanceOf.call(App.account);
+        }).then(function (x) {
+          console.log("User has " + x + " Tokens");
+          if (x < 1) {
+            $('.container-sell-error').removeClass("d-none");
+            $(document).find('.btn-sell-animal')[0].disabled = true;
+          }
+          else {
+            $('.container-sell-error').addClass("d-none");
+            $(document).find('.btn-sell-animal')[0].disabled = false;
+            App.getTokenIds(baseInstance, App.account, 0, x - 1, baseInstance.tokenOfOwnerByIndex.call(App.account, 0), App.Pages.Sell.addTokensOfOwnerToSelect)
+          }
+          App.Pages.current = 'Sell';
+          App.Pages.hideAll();
+          $('.container-sell').removeClass('d-none')
+        }).catch(function (err) {
+          console.log(err.message);
+        });
+      },
+      addTokensOfOwnerToSelect: function () {
+        let select = $('#animal-select');
+        $('#animal-select option').remove()
+        for (let i = 0; i < App.tokensofUser.length; i++) {
+          var opt = document.createElement('option')
+          opt.value = "0x" + App.tokensofUser[i].toString(16).toUpperCase()
+          opt.innerHTML = "0x" + App.tokensofUser[i].toString(16).toUpperCase()
+          select.append(opt)
+        }
+      },
+      askforconfirm: function () {
+        $('#confirmsellmodal').modal('show')
+        let price = $('#price-input')[0].value;
+        let tokenId = $('#animal-select')[0].value;
+        let modal = $('#confirmsellmodal')
+        modal.find('.price').text(price)
+        modal.find('.tokenId').text(tokenId)
+      },
+
+      confirm: function () {
+        let modal = $('#confirmsellmodal');
+        App.Pages.Home.init();
+        modal.modal('hide')
+        let baseInstance;
+        App.contracts.Base.deployed().then(function (instance) {
+          baseInstance = instance;
+          let token = modal.find('.tokenId');
+          let price = modal.find('.price');
+          return baseInstance.sell.sendTransaction(token[0].innerHTML, web3.toWei(price[0].innerHTML), { from: App.account });
+        }).catch(function (err) {
+          console.log(err.message);
+        });
       }
     }
 
@@ -271,11 +443,16 @@ App = {
 
   bindEvents: function () {
     $(document).on('click', '.btn-breed', () => { App.Pages.Breed.breed() })
+    $(document).on('click', '.btn-sell', () => { App.Pages.Sell.init() })
     $(document).on('click', '.btn-connect-wallet', () => { App.initWallet() })
+    $(document).on('click', '.btn-sell-animal', () => { App.Pages.Sell.askforconfirm() })
+    $(document).on('click', '.btn-confirm-sell', () => { App.Pages.Sell.confirm() })
     $(document).on('click', '.btn-confirm-breeding', () => { App.Pages.Breed.confirmBreeding() })
     $(document).on('change', '#choose-token-parent1', () => { App.Pages.Breed.UpdateParentCard("#parent1") })
     $(document).on('change', '#choose-token-parent2', () => { App.Pages.Breed.UpdateParentCard("#parent2") })
     $(document).on('click', '.navbar-brand', () => { App.Pages.Home.init() })
+    $(document).on('click', '.btn-marketplace', () => { App.Pages.Marketplace.init() })
+    $(document).on('click', '.btn-confirm-purchase', () => { App.Pages.Marketplace.confirm() })
     $('#confirmbreedingmodal').on('show.bs.modal', function (event) {
       var modal = $(this)
 
@@ -308,6 +485,35 @@ App = {
     })
   },
 
+  getBuyableTokenIds: function (instance, n, max, onDone) {
+    if (instance == undefined) {
+      App.buyableTokens = [];
+      App.contracts.Base.deployed().then((base) => {
+        instance = base;
+        instance.buyableNumber.call().then(function (x) {
+          if (x > 0) {
+            App.getBuyableTokenIds(instance, 0, x - 1, onDone);
+          }
+          else {
+            onDone();
+          }
+        })
+      })
+    }
+    else {
+      instance.buyableByIndex.call(n).then((x) => {
+        App.buyableTokens.push(x);
+        if (n < max) {
+          App.getBuyableTokenIds(instance, n + 1, x, onDone);
+        }
+        else {
+          onDone();
+        }
+      })
+
+    }
+  },
+
   initWallet: function () {
     if (window.ethereum) {
       // Request account access
@@ -336,7 +542,9 @@ App = {
       $(".btn-connect-wallet").addClass("btn-success")
       $(document).off("click", ".btn-connect-wallet")
       $(".btn-breed").removeClass("d-none")
+      $(".btn-sell").removeClass("d-none")
       $(document).on('click', '.btn-connect-wallet', () => { App.Pages.User.init() })
+      App.Pages.reload();
     });
 
   },
