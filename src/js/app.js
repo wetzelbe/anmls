@@ -2,7 +2,7 @@ App = {
   web3Provider: null,
   contracts: {},
   account: null,
-  imagepath: "https://localhost:44312/api/v1/image/",
+  imagepath: "/api/v1/image/",
   tokensofUser: [],
   buyableTokens: [],
   Pages: {
