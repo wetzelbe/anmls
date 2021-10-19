@@ -395,7 +395,7 @@ App = {
           baseInstance = instance;
           let token = modal.find('.tokenId');
           let price = modal.find('.price');
-          return baseInstance.sell.sendTransaction(token[0].innerHTML, BigInt(price[0].innerHTML) * BigInt("1000000000000000000"), { from: App.account });
+          return baseInstance.sell.sendTransaction(token[0].innerHTML, price[0].innerHTML, { from: App.account });
         }).catch(function (err) {
           console.log(err.message);
         });
