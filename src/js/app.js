@@ -2,7 +2,7 @@ App = {
   web3Provider: null,
   contracts: {},
   account: null,
-  imagepath: "/api/v1/image/",
+  imagepath: "https://localhost:44312/api/v1/image/",
   tokensofUser: [],
   buyableTokens: [],
   Pages: {
@@ -313,7 +313,7 @@ App = {
       }
     })
   },
-  
+
   initWallet: function () {
     if (window.ethereum) {
       // Request account access
