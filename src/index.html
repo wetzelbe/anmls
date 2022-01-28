@@ -93,8 +93,6 @@
     <nav class="navbar navbar-light bg-white mb-3 border justify-content-between">
         <a role="button" style="cursor: pointer;" class="navbar-brand">ANMLS</a>
         <form class="form-inline">
-            <button class="btn btn-outline-dark btn-marketplace mr-3" type="button">Marketplace</button>
-            <button class="btn btn-outline-dark btn-sell d-none mr-3" type="button">Sell</button>
             <button class="btn btn-outline-dark btn-breed d-none mr-3" type="button">Breed</button>
             <button class="btn btn-dark btn-connect-wallet" type="button">Connect Wallet</button>
         </form>
@@ -214,54 +212,6 @@
 
         </div>
 
-    </div>
-
-    <div class="container container-sell d-none">
-        <h1 class="align-center display-4 text-center m-5">Sell</h1>
-        <div class="card card-default form-group m-3 p-3">
-            <label for="animal-select">Select which ANML you want to sell:</label>
-            <select id="animal-select" class="form-control mb-3">
-
-            </select>
-            <div class="d-none container-sell-error border rounded container border-danger mb-3 p-3 bg-light mt-3" id="error">
-                <a class="text-danger">
-                    You don't have any Animals to sell!
-                </a>
-            </div>
-            <label for="price-input">Price in ETH:</label>
-            <input id="price-input" class="form-control mb-3">
-            <button class="btn btn-dark btn-sell-animal">Sell</button>
-        </div>
-    </div>
-
-    <div class="container container-marketplace d-none">
-        <h1 class="align-center display-4 text-center m-5">Marketplace</h1>
-        <p class="text-center m-3">
-            Here you can see ANMLS that are for sale and buy them!
-        </p>
-        <h3 class="d-none m-5 text-center" id="no-animal-for-sale-message">Currently there are no ANMLS for sale on the Marketplace!</h3>
-        <div class="row" id="buyable-animals">
-
-        </div>
-        <div id="marketplaceTemplate" style="display: none;">
-            <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
-                <div class="card card-default card-pet">
-                    <img class="img-rounded img-center" style="width: 100%;"
-                        src="#"
-                        data-holder-rendered="true">
-                    <div class="m-3">
-                        <h3 class="card-title">Scrappy</h3>
-                        <span class="tokenID">0x0</span><br />
-                        <strong>Genes</strong> <span class="animal-genes">Golden Retriever</span><br />
-                        <strong>Parent 1</strong> <span class="animal-parent1">1</span><br />
-                        <strong>Parent 2</strong> <span class="animal-parent2">2</span><br />
-                        <strong>Owner</strong> <span class="animal-owner">2</span><br />
-                        <h4 class="m-3 text-right"><span class="badge badge-dark animal-price"></span>
-                            <button class="btn btn-dark animal-buy d-none">Buy</button></h4>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

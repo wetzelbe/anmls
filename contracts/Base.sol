@@ -1,4 +1,3 @@
-// https://eips.ethereum.org/EIPS/eip-721, http://erc721.org/
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.0 <0.9.0;
 
@@ -18,11 +17,6 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     mapping(address => uint256[]) private _enumOwner;
     mapping(address => mapping(uint256 => uint256)) private _enumOwnerIndex;
     mapping(bytes4 => bool) private _supportedInterfaces;
-
-    mapping(uint256 => bool) private _buyable;
-    uint256[] _forSale;
-    mapping(uint256 => uint256) private _price;
-    mapping(uint256 => uint256) private _indexOfBuyable;
 
     /// @notice Constructor creates Parents with specified Genes
     /// @param GenesParent1 Specify Genes of first Parent
@@ -475,66 +469,4 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     }
 
     // ----------------------- End ERC721Enumerable Functions ---------------------------
-
-    // ----------------------- Begin Marketplace Functions ------------------------------
-
-    function sell(uint256 _tokenId, uint256 price) external {
-        require(_isValidToken(_tokenId));
-        address owner = _owner[_tokenId];
-
-        require(owner == msg.sender || _operator[owner][msg.sender]);
-        if (_buyable[_tokenId]) {
-            _price[_tokenId] = price;
-        } else {
-            _buyable[_tokenId] = true;
-
-            _forSale.push(_tokenId);
-            _price[_tokenId] = price;
-            _indexOfBuyable[_tokenId] = _forSale.length - 1;
-        }
-    }
-
-    function buy(uint256 _tokenId) external payable {
-        address payable buyer = payable(msg.sender);
-        uint256 payedPrice = msg.value;
-
-        require(_owner[_tokenId] != buyer, "Buyer can not be the seller");
-        require(_isValidToken(_tokenId), "Not a valid NFT");
-        require(_buyable[_tokenId], "NFT is not on Sale");
-        require(payedPrice >= _price[_tokenId], "Price is too low");
-
-        // pay the seller
-        // remove token from tokensForSale
-        bool sent = buyer.send(msg.value);
-        require(sent, "Failed to send Ether");
-        _transfer(_owner[_tokenId], buyer, _tokenId);
-
-        _indexOfBuyable[_forSale.length - 1] = _indexOfBuyable[_tokenId];
-        _forSale[_indexOfBuyable[_tokenId]] = _forSale[_forSale.length - 1];
-
-        _buyable[_tokenId] = false;
-        _forSale.pop();
-    }
-
-    function buyableByIndex(uint256 index) external view returns (uint256) {
-        require(index < _forSale.length);
-        return _forSale[index];
-    }
-
-    function buyableNumber() external view returns (uint256) {
-        return _forSale.length;
-    }
-
-    function priceOf(uint256 _tokenId) external view returns (uint256) {
-        require(_isValidToken(_tokenId));
-        require(_buyable[_tokenId]);
-        return _price[_tokenId];
-    }
-
-    function isBuyable(uint256 _tokenId) external view returns (bool) {
-        require(_isValidToken(_tokenId));
-        return _buyable[_tokenId];
-    }
-
-    // ----------------------- End Marketplace Functions   ------------------------------
 }
