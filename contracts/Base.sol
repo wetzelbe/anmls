@@ -23,12 +23,11 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     /// @param GenesParent2 Specify Genes of second Parent
     constructor(
         uint256 GenesParent1,
-        string memory uri1,
         uint256 GenesParent2,
-        string memory uri2
+        string memory base
     ) {
-        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender, uri1);
-        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender, uri2);
+        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender, base);
+        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender, base);
         _supportedInterfaces[0x80ac58cd] = true;
         _supportedInterfaces[0x01ffc9a7] = true;
         _supportedInterfaces[0x5b5e139f] = true;
@@ -90,7 +89,8 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     function breed(
         uint256 Parent1,
         uint256 Parent2,
-        string memory childName
+        string memory childName,
+        string memory base
     ) public returns (uint256) {
         require(Parent1 != Parent2, "Need two individual Parents!");
         require(
@@ -109,7 +109,6 @@ contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) &
             _genes[Parent1]) | ((_genes[Parent1] ^ _genes[Parent2]) & seed);
 
-        string memory base = "https://anmls-test.technology/api/v1/metadata/";
         _addAnimal(childGene, Parent1, Parent2, childName, msg.sender, string(abi.encodePacked(base, childGene)));
         return _tokenIds;
     }

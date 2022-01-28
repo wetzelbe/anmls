@@ -2,7 +2,7 @@ App = {
   web3Provider: null,
   contracts: {},
   account: null,
-  imagepath: "https://localhost:44312/api/v1/image/",
+  imagepath: "https://anmls-test.technology/api/v1/image/",
   tokensofUser: [],
   buyableTokens: [],
   Pages: {
@@ -153,7 +153,8 @@ App = {
           baseInstance = instance;
           return baseInstance.breed.sendTransaction($('#parent1 select')[0].value,
             $('#parent2 select')[0].value,
-            $('#child input')[0].value, { from: App.account });
+            $('#child input')[0].value,
+            "https://anmls-test.technology/api/v1/metadata/", { from: App.account });
         }).catch(function (err) {
           console.log(err.message);
         });
