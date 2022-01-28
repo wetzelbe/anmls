@@ -107,10 +107,6 @@ dist
 
 *bin
 
-*migrations
-
 *.secret
 
 *test
-
-*truffle-config.js
