@@ -1,6 +1,7 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
+const infura = fs.readFileSync(".infura").toString().trim();
 
 
 /**
@@ -48,11 +49,13 @@ module.exports = {
       network_id: "*",       // Any network (default: none)
      },    
      ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161`),
+      provider: () => new HDWalletProvider(mnemonic, `wss://ropsten.infura.io/ws/v3/` + infura),
       network_id: 3,
+      networkCheckTimeout: 999999,
       confirmations: 2,
       timeoutBlocks: 200,
-      skipDryRun: true
+      gas: 4000000,
+      gasPrice: 10000000000
     },
      
     // Another network with more advanced options...

@@ -110,3 +110,5 @@ dist
 *.secret
 
 *test
+
+.infura
