@@ -1,7 +1,7 @@
-const Base = artifacts.require("Base");
+const ANMLS = artifacts.require("ANMLS");
 
 module.exports = function (deployer) {
-  deployer.deploy(Base, BigInt("0x0"), 
+  deployer.deploy(ANMLS, BigInt("0x0"), 
                         BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), 
                         "https://anmls-test.technology/api/v1/metadata/");
 };

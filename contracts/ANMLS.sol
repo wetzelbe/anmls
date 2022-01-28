@@ -3,7 +3,7 @@ pragma solidity >=0.5.0 <0.9.0;
 
 import "./Interfaces.sol";
 
-contract Base is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
+contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     uint256 private _tokenIds = 0;
     mapping(address => mapping(address => bool)) private _operator;
 
