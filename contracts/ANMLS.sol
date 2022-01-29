@@ -34,6 +34,8 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         _supportedInterfaces[0x01ffc9a7] = true;
         _supportedInterfaces[0x5b5e139f] = true;
         _supportedInterfaces[0x780e9d63] = true;
+        emit Transfer(address(this), msg.sender, 1);
+        emit Transfer(address(this), msg.sender, 2);
     }
 
     function _addAnimal(
@@ -44,7 +46,6 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         address firstOwner,
         string memory uri
     ) private {
-        _tokenIds++;
         _parent1[_tokenIds] = Parent1;
         _parent2[_tokenIds] = Parent2;
         _genes[_tokenIds] = Genes;
@@ -55,6 +56,7 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         _enumOwnerIndex[firstOwner][_tokenIds] =
             _enumOwner[firstOwner].length -
             1;
+        _tokenIds++;
     }
 
     function _transfer(
@@ -112,6 +114,7 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             _genes[Parent1]) | ((_genes[Parent1] ^ _genes[Parent2]) & seed);
 
         _addAnimal(childGene, Parent1, Parent2, childName, msg.sender, string(abi.encodePacked(base, Strings.toString(childGene))));
+        emit Transfer(address(this), msg.sender, _tokenIds);
         return _tokenIds;
     }
 
