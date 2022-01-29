@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.9.0;
+pragma solidity ^0.8.1;
 
 import "./Interfaces.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
     uint256 private _tokenIds = 0;
@@ -109,7 +111,7 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
             0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) &
             _genes[Parent1]) | ((_genes[Parent1] ^ _genes[Parent2]) & seed);
 
-        _addAnimal(childGene, Parent1, Parent2, childName, msg.sender, string(abi.encodePacked(base, childGene)));
+        _addAnimal(childGene, Parent1, Parent2, childName, msg.sender, string(abi.encodePacked(base, Strings.toString(childGene))));
         return _tokenIds;
     }
 
