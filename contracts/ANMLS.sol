@@ -28,8 +28,8 @@ contract ANMLS is ERC721, ERC165, ERC721Metadata, ERC721Enumerable {
         uint256 GenesParent2,
         string memory base
     ) {
-        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender, base);
-        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender, base);
+        _addAnimal(GenesParent1, 0, 0, "Eve", msg.sender, string(abi.encodePacked(base, Strings.toHexString(GenesParent1))));
+        _addAnimal(GenesParent2, 0, 0, "Adam", msg.sender, string(abi.encodePacked(base, Strings.toHexString(GenesParent2))));
         _supportedInterfaces[0x80ac58cd] = true;
         _supportedInterfaces[0x01ffc9a7] = true;
         _supportedInterfaces[0x5b5e139f] = true;
