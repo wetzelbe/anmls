@@ -261,7 +261,7 @@ App = {
 
 
   initContract: function () {
-    $.getJSON('Base.json', function (data) {
+    $.getJSON('ANMLS.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with @truffle/contract
       var ContractArtifact = data;
       App.contracts.Base = TruffleContract(ContractArtifact);

@@ -49,14 +49,17 @@ module.exports = {
       network_id: "*",       // Any network (default: none)
      },    
      ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, `wss://ropsten.infura.io/ws/v3/` + infura),
+      provider: () => new HDWalletProvider(mnemonic, `wss://ropsten.infura.io/ws/v3/` + infura, 0),
       network_id: 3,
-      networkCheckTimeout: 999999,
-      confirmations: 2,
-      timeoutBlocks: 200,
-      gas: 4000000,
-      gasPrice: 10000000000
-    },
+      gas: 8000000,
+      gasPrice: 20000000000,
+      websocket: true,
+      networkCheckTimeout: 10000000
+    },   
+    rinkeby: {
+     provider: () => new HDWalletProvider(mnemonic, `wss://rinkeby.infura.io/ws/v3/` + infura, 0),
+     network_id: 4
+   },
      
     // Another network with more advanced options...
     // advanced: {
